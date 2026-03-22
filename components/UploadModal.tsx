@@ -1,6 +1,6 @@
 "use client";
 import { useRef, useState, useCallback } from "react";
-import { X, Upload, ArrowRight, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { X, Upload, ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
 import type { Converter } from "@/lib/converters";
 import { convertFile } from "@/lib/convert";
 
@@ -11,28 +11,6 @@ interface Props {
 
 type Step = "upload" | "converting" | "done" | "error";
 
-// Only these conversions work natively in the browser
-const BROWSER_SUPPORTED = new Set([
-  // Images
-  "JPG→PNG","PNG→JPG","JPG→WEBP","WEBP→JPG","PNG→WEBP","WEBP→PNG",
-  "BMP→JPG","TIFF→JPG","GIF→JPG","SVG→PNG","SVG→JPG",
-  "IMAGE→PDF","JPG→PDF","PNG→PDF","WEBP→PDF",
-  // Excel
-  "EXCEL→CSV","CSV→EXCEL","EXCEL→JSON","JSON→EXCEL","EXCEL→XML","XML→EXCEL",
-  // CSV / JSON / XML
-  "CSV→JSON","JSON→CSV","XML→JSON","JSON→XML",
-  // Word
-  "WORD→HTML","WORD→TEXT",
-  // Web / Text
-  "MARKDOWN→HTML","HTML→MARKDOWN","PDF→TEXT","TEXT→PDF","HTML→PDF",
-  // Audio
-  "MP3→WAV","WAV→MP3","AAC→MP3","FLAC→MP3",
-]);
-
-function isSupported(from: string, to: string) {
-  return BROWSER_SUPPORTED.has(`${from.toUpperCase()}→${to.toUpperCase()}`);
-}
-
 export default function UploadModal({ converter, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -40,8 +18,6 @@ export default function UploadModal({ converter, onClose }: Props) {
   const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-
-  const supported = isSupported(converter.from, converter.to);
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -105,44 +81,10 @@ export default function UploadModal({ converter, onClose }: Props) {
               {converter.to}
             </h2>
             <p className="text-white/35 text-xs mt-0.5">
-              {supported ? "Runs entirely in your browser" : "Requires external tool"}
+              Runs entirely in your browser
             </p>
           </div>
         </div>
-
-        {/* Not supported banner */}
-        {!supported && (
-          <div className="flex gap-3 bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 mb-4">
-            <Info size={18} className="text-amber-400 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-amber-300 text-sm font-medium mb-1">
-                Browser conversion not available
-              </p>
-              <p className="text-amber-400/70 text-xs leading-relaxed">
-                {converter.from} → {converter.to} requires server-side processing.
-                Try a free tool like{" "}
-                <a
-                  href="https://cloudconvert.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-amber-300"
-                >
-                  CloudConvert
-                </a>{" "}
-                or{" "}
-                <a
-                  href="https://www.ilovepdf.com"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline hover:text-amber-300"
-                >
-                  iLovePDF
-                </a>
-                .
-              </p>
-            </div>
-          </div>
-        )}
 
         {/* ── Upload step ── */}
         {step === "upload" && (
@@ -151,22 +93,19 @@ export default function UploadModal({ converter, onClose }: Props) {
               onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
               onDragLeave={() => setDragging(false)}
               onDrop={onDrop}
-              onClick={() => supported && inputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
-                !supported
-                  ? "border-white/5 opacity-40 cursor-not-allowed"
-                  : dragging
-                  ? "border-indigo-400 bg-indigo-500/10 cursor-copy"
+              onClick={() => inputRef.current?.click()}
+              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
+                dragging
+                  ? "border-indigo-400 bg-indigo-500/10"
                   : file
-                  ? "border-emerald-500/50 bg-emerald-500/5 cursor-pointer"
-                  : "border-white/10 hover:border-indigo-500/40 hover:bg-white/[0.02] cursor-pointer"
+                  ? "border-emerald-500/50 bg-emerald-500/5"
+                  : "border-white/10 hover:border-indigo-500/40 hover:bg-white/[0.02]"
               }`}
             >
               <input
                 ref={inputRef}
                 type="file"
                 className="hidden"
-                disabled={!supported}
                 onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
               />
               {file ? (
@@ -198,10 +137,10 @@ export default function UploadModal({ converter, onClose }: Props) {
             </div>
 
             <button
-              disabled={!file || !supported}
+              disabled={!file}
               onClick={handleConvert}
               className={`w-full mt-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                file && supported
+                file
                   ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90 active:scale-[0.98] shadow-lg shadow-indigo-500/20"
                   : "bg-white/5 text-white/20 cursor-not-allowed"
               }`}

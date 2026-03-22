@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@types/file-saver": "^2.0.7",
     "browser-image-compression": "^2.0.2",
     "clsx": "^2.1.1",
@@ -23,6 +25,7 @@
     "pdfjs-dist": "^5.5.207",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "tesseract.js": "^7.0.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

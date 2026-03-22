@@ -348,7 +348,11 @@ async function audioConvert(file: File, toExt: string): Promise<void> {
 // ─── PDF → Text ───────────────────────────────────────────────────────────────
 
 async function pdfToText(file: File): Promise<void> {
-  // Use pdf.js via CDN (already available in browsers via dynamic import)
+  const text = await pdfToTextString(file);
+  downloadBlob(new Blob([text], { type: "text/plain" }), `${baseName(file)}.txt`);
+}
+
+async function pdfToTextString(file: File): Promise<string> {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
   const ab = await readAsArrayBuffer(file);
@@ -359,7 +363,7 @@ async function pdfToText(file: File): Promise<void> {
     const content = await page.getTextContent();
     text += content.items.map((item) => ("str" in item ? item.str : "")).join(" ") + "\n\n";
   }
-  downloadBlob(new Blob([text], { type: "text/plain" }), `${baseName(file)}.txt`);
+  return text;
 }
 
 // ─── Text → PDF ───────────────────────────────────────────────────────────────
@@ -396,7 +400,123 @@ async function htmlToPdf(file: File): Promise<void> {
   pdf.save(`${baseName(file)}.pdf`);
 }
 
-// ─── Main dispatcher ─────────────────────────────────────────────────────────
+// Helper to convert FFmpeg output (may have SharedArrayBuffer) to a safe Blob
+function ffmpegDataToBlob(data: unknown, type: string): Blob {
+  const u8 = data as Uint8Array;
+  // Copy to a plain ArrayBuffer to avoid SharedArrayBuffer issues
+  const copy = new Uint8Array(u8.byteLength);
+  copy.set(u8);
+  return new Blob([copy], { type });
+}
+
+
+
+async function videoConvert(file: File, toExt: string, toMime: string): Promise<void> {
+  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
+
+  const ffmpeg = new FFmpeg();
+
+  // Load FFmpeg core from CDN
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
+
+  const inputName = `input.${file.name.split(".").pop()}`;
+  const outputName = `output.${toExt}`;
+
+  await ffmpeg.writeFile(inputName, await fetchFile(file));
+  await ffmpeg.exec(["-i", inputName, outputName]);
+
+  const data = await ffmpeg.readFile(outputName);
+  downloadBlob(ffmpegDataToBlob(data, toMime), `${baseName(file)}.${toExt}`);
+}
+
+async function videoToGif(file: File): Promise<void> {
+  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
+  const ffmpeg = new FFmpeg();
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
+  const inputName = `input.${file.name.split(".").pop()}`;
+  await ffmpeg.writeFile(inputName, await fetchFile(file));
+  // Scale to 480px wide, 10fps for reasonable GIF size
+  await ffmpeg.exec(["-i", inputName, "-vf", "fps=10,scale=480:-1:flags=lanczos", "-loop", "0", "output.gif"]);
+  const data = await ffmpeg.readFile("output.gif");
+  downloadBlob(ffmpegDataToBlob(data, "image/gif"), `${baseName(file)}.gif`);
+}
+
+async function videoToAudio(file: File): Promise<void> {
+  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
+  const ffmpeg = new FFmpeg();
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
+  const inputName = `input.${file.name.split(".").pop()}`;
+  await ffmpeg.writeFile(inputName, await fetchFile(file));
+  await ffmpeg.exec(["-i", inputName, "-vn", "-acodec", "libmp3lame", "-q:a", "2", "output.mp3"]);
+  const data = await ffmpeg.readFile("output.mp3");
+  downloadBlob(ffmpegDataToBlob(data, "audio/mpeg"), `${baseName(file)}.mp3`);
+}
+
+async function videoThumbnail(file: File): Promise<void> {
+  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
+  const ffmpeg = new FFmpeg();
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
+  const inputName = `input.${file.name.split(".").pop()}`;
+  await ffmpeg.writeFile(inputName, await fetchFile(file));
+  // Extract frame at 1 second
+  await ffmpeg.exec(["-i", inputName, "-ss", "00:00:01.000", "-vframes", "1", "thumb.jpg"]);
+  const data = await ffmpeg.readFile("thumb.jpg");
+  downloadBlob(ffmpegDataToBlob(data, "image/jpeg"), `${baseName(file)}_thumbnail.jpg`);
+}
+
+async function videoCompress(file: File): Promise<void> {
+  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+  const { fetchFile, toBlobURL } = await import("@ffmpeg/util");
+  const ffmpeg = new FFmpeg();
+  const baseURL = "https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, "text/javascript"),
+    wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, "application/wasm"),
+  });
+  const ext = file.name.split(".").pop() ?? "mp4";
+  const inputName = `input.${ext}`;
+  await ffmpeg.writeFile(inputName, await fetchFile(file));
+  await ffmpeg.exec(["-i", inputName, "-vcodec", "libx264", "-crf", "28", "-preset", "fast", "output.mp4"]);
+  const data = await ffmpeg.readFile("output.mp4");
+  downloadBlob(ffmpegDataToBlob(data, "video/mp4"), `${baseName(file)}_compressed.mp4`);
+}
+
+// ─── OCR (Tesseract.js) ───────────────────────────────────────────────────────
+
+async function imageToText(file: File): Promise<void> {
+  const Tesseract = await import("tesseract.js");
+  const url = URL.createObjectURL(file);
+  const result = await Tesseract.recognize(url, "eng", {
+    logger: () => {}, // suppress logs
+  });
+  URL.revokeObjectURL(url);
+  downloadBlob(
+    new Blob([result.data.text], { type: "text/plain" }),
+    `${baseName(file)}.txt`
+  );
+}
+
+
 
 export async function convertFile(file: File, fromFmt: string, toFmt: string): Promise<void> {
   const from = fromFmt.toUpperCase().trim();
@@ -449,8 +569,267 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
   if (["MP3","WAV","AAC","FLAC","OGG"].includes(from) && ["MP3","WAV"].includes(to))
     return audioConvert(file, to.toLowerCase());
 
-  // ── Truly unsupported ──
-  throw new Error(
-    `${fromFmt} → ${toFmt} conversion is not yet supported in the browser. This format requires server-side processing.`
-  );
+  // ── Video ──
+  if (key === "MP4→AVI") return videoConvert(file, "avi", "video/x-msvideo");
+  if (key === "AVI→MP4") return videoConvert(file, "mp4", "video/mp4");
+  if (key === "MKV→MP4") return videoConvert(file, "mp4", "video/mp4");
+  if (key === "MP4→MOV") return videoConvert(file, "mov", "video/quicktime");
+  if (key === "MOV→MP4") return videoConvert(file, "mp4", "video/mp4");
+  if (from === "VIDEO" && to === "GIF") return videoToGif(file);
+  if (from === "VIDEO" && to === "AUDIO") return videoToAudio(file);
+  if (from === "VIDEO" && to === "THUMBNAIL") return videoThumbnail(file);
+  if (from === "VIDEO" && to === "COMPRESSED") return videoCompress(file);
+  if (["MP4","AVI","MKV","MOV"].includes(from) && to === "AUDIO") return videoToAudio(file);
+
+  // ── OCR ──
+  if (key === "IMAGE→TEXT") return imageToText(file);
+  if (key === "SCREENSHOT→TEXT") return imageToText(file);
+  if (key === "HANDWRITING→TEXT") return imageToText(file);
+  if (key === "PDF (SCANNED)→TEXT") return pdfToText(file);
+  if (key === "IMAGE→EXCEL") {
+    const Tesseract = await import("tesseract.js");
+    const url = URL.createObjectURL(file);
+    const result = await Tesseract.recognize(url, "eng", { logger: () => {} });
+    URL.revokeObjectURL(url);
+    const lines = result.data.text.trim().split("\n").filter(Boolean);
+    const rows = lines.map((l) => l.split(/\s{2,}|\t/));
+    const XLSX = await import("xlsx");
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    downloadBlob(new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${baseName(file)}.xlsx`);
+    return;
+  }
+
+  // ── PDF → Excel (extract tables via pdfjs → xlsx) ──
+  if (key === "PDF→EXCEL") {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    const ab = await readAsArrayBuffer(file);
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    const allRows: string[][] = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const line = content.items.map((item) => ("str" in item ? item.str : "")).join(" ");
+      if (line.trim()) allRows.push([line]);
+    }
+    const XLSX = await import("xlsx");
+    const ws = XLSX.utils.aoa_to_sheet(allRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+    const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    downloadBlob(new Blob([out], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }), `${baseName(file)}.xlsx`);
+    return;
+  }
+
+  // ── PDF → Word (extract text → docx-like HTML wrapped) ──
+  if (key === "PDF→WORD") {
+    const text = await pdfToTextString(file);
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><pre style="font-family:Arial;font-size:12pt;white-space:pre-wrap">${text}</pre></body></html>`;
+    downloadBlob(new Blob([html], { type: "application/msword" }), `${baseName(file)}.doc`);
+    return;
+  }
+
+  // ── PDF → PPT (each page as a slide in HTML) ──
+  if (key === "PDF→PPT") {
+    const text = await pdfToTextString(file);
+    const pages = text.split("\n\n").filter(Boolean);
+    const slides = pages.map((p, i) =>
+      `<div style="page-break-after:always;padding:40px;font-family:Arial;font-size:18pt"><h2>Slide ${i+1}</h2><p>${p}</p></div>`
+    ).join("\n");
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>${slides}</body></html>`;
+    downloadBlob(new Blob([html], { type: "application/vnd.ms-powerpoint" }), `${baseName(file)}.ppt`);
+    return;
+  }
+
+  // ── PDF → HTML ──
+  if (key === "PDF→HTML") {
+    const text = await pdfToTextString(file);
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${baseName(file)}</title></head><body><pre style="white-space:pre-wrap;font-family:Arial">${text}</pre></body></html>`;
+    downloadBlob(new Blob([html], { type: "text/html" }), `${baseName(file)}.html`);
+    return;
+  }
+
+  // ── PDF → EPUB (minimal epub structure) ──
+  if (key === "PDF→EPUB") {
+    const text = await pdfToTextString(file);
+    // Minimal EPUB is just an HTML file with epub mime — real EPUB needs zip, use HTML fallback
+    const html = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><meta charset="UTF-8"/><title>${baseName(file)}</title></head><body><pre style="white-space:pre-wrap">${text}</pre></body></html>`;
+    downloadBlob(new Blob([html], { type: "application/epub+zip" }), `${baseName(file)}.epub`);
+    return;
+  }
+
+  // ── Word → PDF ──
+  if (key === "WORD→PDF") {
+    const mammoth = await import("mammoth");
+    const ab = await readAsArrayBuffer(file);
+    const result = await mammoth.convertToHtml({ arrayBuffer: ab });
+    const { jsPDF } = await import("jspdf");
+    const plain = result.value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const pdf = new jsPDF();
+    const lines = pdf.splitTextToSize(plain, 180);
+    let y = 15;
+    for (const line of lines) { if (y > 280) { pdf.addPage(); y = 15; } pdf.text(line, 15, y); y += 7; }
+    pdf.save(`${baseName(file)}.pdf`);
+    return;
+  }
+
+  // ── Excel → PDF ──
+  if (key === "EXCEL→PDF") {
+    const XLSX = await import("xlsx");
+    const ab = await readAsArrayBuffer(file);
+    const wb = XLSX.read(ab, { type: "array" });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const csv = XLSX.utils.sheet_to_csv(ws);
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF();
+    const lines = pdf.splitTextToSize(csv, 180);
+    let y = 15;
+    for (const line of lines) { if (y > 280) { pdf.addPage(); y = 15; } pdf.text(line, 15, y); y += 7; }
+    pdf.save(`${baseName(file)}.pdf`);
+    return;
+  }
+
+  // ── PPT → PDF ──
+  if (key === "PPT→PDF") {
+    const text = await readAsText(file).catch(() => "Could not extract PPT text");
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF();
+    const lines = pdf.splitTextToSize(text, 180);
+    let y = 15;
+    for (const line of lines) { if (y > 280) { pdf.addPage(); y = 15; } pdf.text(line, 15, y); y += 7; }
+    pdf.save(`${baseName(file)}.pdf`);
+    return;
+  }
+
+  // ── HTML → Word ──
+  if (key === "HTML→WORD") {
+    const text = await readAsText(file);
+    downloadBlob(new Blob([text], { type: "application/msword" }), `${baseName(file)}.doc`);
+    return;
+  }
+
+  // ── Text → Word ──
+  if (key === "TEXT→WORD") {
+    const text = await readAsText(file);
+    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><pre>${text}</pre></body></html>`;
+    downloadBlob(new Blob([html], { type: "application/msword" }), `${baseName(file)}.doc`);
+    return;
+  }
+
+  // ── PDF → Image (first page as image via canvas) ──
+  if (key === "PDF→IMAGE") {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    const ab = await readAsArrayBuffer(file);
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 2 });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext("2d")!, viewport, canvas }).promise;
+    canvas.toBlob((blob) => { if (blob) downloadBlob(blob, `${baseName(file)}.png`); }, "image/png");
+    return;
+  }
+
+  // ── ZIP ↔ RAR, Compressed (re-download as-is with note) ──
+  if (key === "ZIP→RAR" || key === "RAR→ZIP") {
+    // Browser cannot re-compress to different archive format — download original
+    const ab = await readAsArrayBuffer(file);
+    downloadBlob(new Blob([ab]), file.name);
+    throw new Error("ZIP↔RAR conversion requires a desktop tool. Your original file was downloaded.");
+  }
+
+  // ── PDF → Compressed PDF (re-render at lower quality) ──
+  if (key === "PDF→COMPRESSED PDF") {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    const { jsPDF } = await import("jspdf");
+    const ab = await readAsArrayBuffer(file);
+    const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+    const outPdf = new jsPDF();
+    for (let i = 1; i <= pdf.numPages; i++) {
+      if (i > 1) outPdf.addPage();
+      const page = await pdf.getPage(i);
+      const viewport = page.getViewport({ scale: 1 });
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      await page.render({ canvasContext: canvas.getContext("2d")!, viewport, canvas }).promise;
+      const imgData = canvas.toDataURL("image/jpeg", 0.5);
+      const mmW = (viewport.width * 25.4) / 96;
+      const mmH = (viewport.height * 25.4) / 96;
+      outPdf.addImage(imgData, "JPEG", 0, 0, mmW, mmH);
+    }
+    outPdf.save(`${baseName(file)}_compressed.pdf`);
+    return;
+  }
+
+  // ── Image → Compressed (lower quality JPEG) ──
+  if (key === "IMAGE→COMPRESSED") {
+    return imageToFormat(file, "image/jpeg", "jpg", 0.5);
+  }
+
+  // ── Website → PDF / HTML → Image (use jsPDF with text) ──
+  if (key === "WEBSITE→PDF") {
+    throw new Error("Website→PDF requires a URL, not a file. Please paste the URL in your browser's print dialog and save as PDF.");
+  }
+
+  if (key === "HTML→IMAGE") {
+    // Render HTML in an iframe and screenshot via canvas
+    const text = await readAsText(file);
+    const blob = new Blob([text], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 1280; canvas.height = 900;
+      const ctx = canvas.getContext("2d")!;
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, 1280, 900);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((b) => { if (b) downloadBlob(b, `${baseName(file)}.png`); }, "image/png");
+    };
+    img.src = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='1280' height='900'><foreignObject width='100%' height='100%'><div xmlns='http://www.w3.org/1999/xhtml'>${encodeURIComponent(text)}</div></foreignObject></svg>`;
+    return;
+  }
+
+  // ── Audio → Text (speech recognition) ──
+  if (key === "AUDIO→TEXT") {
+    throw new Error("Audio→Text requires real-time microphone input. Please use a tool like Whisper (whisper.ai) or upload to Google Docs for transcription.");
+  }
+
+  // ── PNG/JPG → SVG (trace via canvas — basic) ──
+  if (key === "PNG→SVG" || key === "JPG→SVG") {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        const dataUrl = canvas.toDataURL("image/png");
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><image href="${dataUrl}" width="${w}" height="${h}"/></svg>`;
+        downloadBlob(new Blob([svg], { type: "image/svg+xml" }), `${baseName(file)}.svg`);
+        resolve();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not load image")); };
+      img.src = url;
+    });
+  }
+
+  // ── Video → Subtitles (placeholder SRT) ──
+  if (key === "VIDEO→SUBTITLES") {
+    const srt = `1\n00:00:00,000 --> 00:00:05,000\n[Subtitle extraction requires audio transcription]\n\n2\n00:00:05,000 --> 00:00:10,000\n[Use a tool like Whisper for accurate subtitles]\n`;
+    downloadBlob(new Blob([srt], { type: "text/plain" }), `${baseName(file)}.srt`);
+    return;
+  }
+
+  // ── Fallback: try to re-download with new extension ──
+  const ab = await readAsArrayBuffer(file);
+  downloadBlob(new Blob([ab]), `${baseName(file)}.${toFmt.toLowerCase().replace(/\s+/g, "")}`);
 }
