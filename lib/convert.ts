@@ -354,7 +354,7 @@ async function pdfToText(file: File): Promise<void> {
 
 async function pdfToTextString(file: File): Promise<string> {
   const pdfjsLib = await import("pdfjs-dist");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
   const ab = await readAsArrayBuffer(file);
   const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
   let text = "";
@@ -605,7 +605,7 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
   // ── PDF → Excel (extract tables via pdfjs → xlsx) ──
   if (key === "PDF→EXCEL") {
     const pdfjsLib = await import("pdfjs-dist");
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
     const ab = await readAsArrayBuffer(file);
     const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
     const allRows: string[][] = [];
@@ -722,7 +722,7 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
   // ── PDF → Image (first page as image via canvas) ──
   if (key === "PDF→IMAGE") {
     const pdfjsLib = await import("pdfjs-dist");
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
     const ab = await readAsArrayBuffer(file);
     const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
     const page = await pdf.getPage(1);
@@ -746,7 +746,7 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
   // ── PDF → Compressed PDF (re-render at lower quality) ──
   if (key === "PDF→COMPRESSED PDF") {
     const pdfjsLib = await import("pdfjs-dist");
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
     const { jsPDF } = await import("jspdf");
     const ab = await readAsArrayBuffer(file);
     const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
