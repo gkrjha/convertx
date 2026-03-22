@@ -20,8 +20,37 @@ const perks = [
   { icon: <CheckCircle size={15} />, text: "100% free forever" },
 ];
 
+// Only these conversions work natively in the browser
+const BROWSER_SUPPORTED = new Set([
+  "JPG→PNG","PNG→JPG","JPG→WEBP","WEBP→JPG","PNG→WEBP","WEBP→PNG",
+  "BMP→JPG","TIFF→JPG","GIF→JPG",
+  "SVG→PNG","SVG→JPG",
+  "IMAGE→PDF","JPG→PDF","PNG→PDF","WEBP→PDF",
+  "CSV→JSON","JSON→CSV",
+  "XML→JSON","JSON→XML",
+  "MARKDOWN→HTML","HTML→MARKDOWN",
+  "MP3→WAV","WAV→MP3","AAC→MP3","FLAC→MP3",
+]);
+
+function isSupported(from: string, to: string) {
+  return BROWSER_SUPPORTED.has(`${from.toUpperCase()}→${to.toUpperCase()}`);
+}
+
+function cloudConvertUrl(from: string, to: string) {
+  return `https://cloudconvert.com/${from.toLowerCase().replace(/\s+/g, "-")}-to-${to.toLowerCase().replace(/\s+/g, "-")}`;
+}
+
 export default function ConverterPageClient({ converter, category, related }: Props) {
   const [open, setOpen] = useState(false);
+  const supported = isSupported(converter.from, converter.to);
+
+  const handleConvertClick = () => {
+    if (supported) {
+      setOpen(true);
+    } else {
+      window.open(cloudConvertUrl(converter.from, converter.to), "_blank", "noopener,noreferrer");
+    }
+  };
 
   const gradientClass = category?.color ?? "from-indigo-500 to-purple-600";
   const fromUp = converter.from.toUpperCase();
@@ -82,10 +111,11 @@ export default function ConverterPageClient({ converter, category, related }: Pr
             </div>
 
             <button
-              onClick={() => setOpen(true)}
+              onClick={handleConvertClick}
               className={`inline-flex items-center gap-2 bg-gradient-to-r ${gradientClass} text-white px-8 py-4 rounded-xl font-bold text-base hover:opacity-90 transition-all hover:scale-105 shadow-lg`}
             >
-              Convert {fromUp} to {toUp} <ArrowRight size={18} />
+              {supported ? `Convert ${fromUp} to ${toUp}` : `Open CloudConvert ↗`}
+              <ArrowRight size={18} />
             </button>
           </div>
 

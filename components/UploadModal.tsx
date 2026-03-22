@@ -11,28 +11,20 @@ interface Props {
 
 type Step = "upload" | "converting" | "done" | "error";
 
-// Conversions that need server-side tools
-const BROWSER_UNSUPPORTED = new Set([
-  "PDF→WORD", "PDF→EXCEL", "PDF→PPT", "PDF→EPUB", "PDF→IMAGE",
-  "WORD→PDF", "WORD→HTML", "WORD→TEXT",
-  "EXCEL→PDF", "EXCEL→CSV", "EXCEL→JSON", "EXCEL→XML",
-  "CSV→EXCEL", "JSON→EXCEL", "XML→EXCEL",
-  "PPT→PDF", "HTML→WORD",
-  "MP4→AVI", "AVI→MP4", "MKV→MP4", "MP4→MOV", "MOV→MP4",
-  "VIDEO→GIF", "VIDEO→AUDIO (MP3)", "VIDEO→SUBTITLES",
-  "VIDEO→COMPRESSED", "VIDEO→THUMBNAIL",
-  "IMAGE→TEXT", "PDF (SCANNED)→TEXT", "HANDWRITING→TEXT",
-  "IMAGE→EXCEL", "SCREENSHOT→TEXT",
-  "AUDIO→TEXT",
-  "ZIP→RAR", "RAR→ZIP",
-  "PDF→COMPRESSED PDF", "IMAGE→COMPRESSED",
-  "HTML→IMAGE", "WEBSITE→PDF",
-  "PNG→SVG", "JPG→SVG",
+// Only these conversions work natively in the browser
+const BROWSER_SUPPORTED = new Set([
+  "JPG→PNG","PNG→JPG","JPG→WEBP","WEBP→JPG","PNG→WEBP","WEBP→PNG",
+  "BMP→JPG","TIFF→JPG","GIF→JPG",
+  "SVG→PNG","SVG→JPG",
+  "IMAGE→PDF","JPG→PDF","PNG→PDF","WEBP→PDF",
+  "CSV→JSON","JSON→CSV",
+  "XML→JSON","JSON→XML",
+  "MARKDOWN→HTML","HTML→MARKDOWN",
+  "MP3→WAV","WAV→MP3","AAC→MP3","FLAC→MP3",
 ]);
 
 function isSupported(from: string, to: string) {
-  const key = `${from.toUpperCase()}→${to.toUpperCase()}`;
-  return !BROWSER_UNSUPPORTED.has(key);
+  return BROWSER_SUPPORTED.has(`${from.toUpperCase()}→${to.toUpperCase()}`);
 }
 
 export default function UploadModal({ converter, onClose }: Props) {
