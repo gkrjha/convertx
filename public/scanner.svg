@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="scan" x1="0" y1="0" x2="120" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0"/>
+      <stop offset="50%" stop-color="#c084fc" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background rounded rect -->
+  <rect width="120" height="120" rx="28" fill="url(#bg)"/>
+
+  <!-- Document body -->
+  <rect x="28" y="22" width="52" height="66" rx="5" fill="white" fill-opacity="0.15" stroke="white" stroke-opacity="0.4" stroke-width="1.5"/>
+
+  <!-- Document fold corner -->
+  <path d="M68 22 L80 34 L68 34 Z" fill="white" fill-opacity="0.25"/>
+  <path d="M68 22 L80 34 H68 V22Z" fill="white" fill-opacity="0.1" stroke="white" stroke-opacity="0.3" stroke-width="1"/>
+
+  <!-- Document lines -->
+  <line x1="36" y1="46" x2="64" y2="46" stroke="white" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="36" y1="54" x2="64" y2="54" stroke="white" stroke-opacity="0.5" stroke-width="2" stroke-linecap="round"/>
+  <line x1="36" y1="62" x2="56" y2="62" stroke="white" stroke-opacity="0.35" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Scanner bed (bottom bar) -->
+  <rect x="18" y="82" width="72" height="10" rx="5" fill="white" fill-opacity="0.2" stroke="white" stroke-opacity="0.3" stroke-width="1.5"/>
+
+  <!-- Scan line (glowing) -->
+  <rect x="18" y="70" width="72" height="3" rx="1.5" fill="url(#scan)" opacity="0.9"/>
+
+  <!-- Scanner legs -->
+  <rect x="24" y="92" width="6" height="8" rx="3" fill="white" fill-opacity="0.25"/>
+  <rect x="78" y="92" width="6" height="8" rx="3" fill="white" fill-opacity="0.25"/>
+
+  <!-- Sparkle top-right -->
+  <circle cx="90" cy="22" r="3" fill="white" fill-opacity="0.6"/>
+  <circle cx="98" cy="30" r="1.5" fill="white" fill-opacity="0.4"/>
+  <circle cx="94" cy="14" r="1.5" fill="white" fill-opacity="0.3"/>
+</svg>

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 320" fill="none">
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="400" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0f0f1a"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="scanLine" x1="0" y1="0" x2="200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#818cf8" stop-opacity="0"/>
+      <stop offset="40%" stop-color="#c084fc" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#c084fc" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#818cf8" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <clipPath id="cardClip">
+      <rect x="60" y="20" width="280" height="280" rx="20"/>
+    </clipPath>
+  </defs>
+
+  <!-- Outer glow blobs -->
+  <ellipse cx="200" cy="160" rx="160" ry="120" fill="#6366f1" fill-opacity="0.06"/>
+  <ellipse cx="300" cy="80" rx="80" ry="60" fill="#a855f7" fill-opacity="0.08"/>
+
+  <!-- Main card -->
+  <rect x="60" y="20" width="280" height="280" rx="20" fill="url(#cardBg)" stroke="white" stroke-opacity="0.08" stroke-width="1"/>
+
+  <!-- Scanner device body -->
+  <rect x="100" y="55" width="200" height="140" rx="12" fill="#1a1a2e" stroke="#6366f1" stroke-opacity="0.4" stroke-width="1.5"/>
+
+  <!-- Scanner glass/bed -->
+  <rect x="112" y="67" width="176" height="116" rx="8" fill="#0d0d1a" stroke="#4f46e5" stroke-opacity="0.3" stroke-width="1"/>
+
+  <!-- Document on scanner -->
+  <rect x="128" y="78" width="110" height="94" rx="6" fill="white" fill-opacity="0.06" stroke="white" stroke-opacity="0.2" stroke-width="1"/>
+  <!-- Doc fold -->
+  <path d="M220 78 L238 78 L238 96 Z" fill="white" fill-opacity="0.08"/>
+  <line x1="220" y1="78" x2="238" y2="96" stroke="white" stroke-opacity="0.15" stroke-width="1"/>
+  <!-- Doc lines -->
+  <line x1="138" y1="100" x2="218" y2="100" stroke="white" stroke-opacity="0.25" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="138" y1="110" x2="218" y2="110" stroke="white" stroke-opacity="0.25" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="138" y1="120" x2="200" y2="120" stroke="white" stroke-opacity="0.18" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="138" y1="130" x2="210" y2="130" stroke="white" stroke-opacity="0.18" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="138" y1="140" x2="190" y2="140" stroke="white" stroke-opacity="0.12" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="138" y1="150" x2="205" y2="150" stroke="white" stroke-opacity="0.12" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Scan line (animated glow) -->
+  <rect x="112" y="118" width="176" height="3" rx="1.5" fill="url(#scanLine)" filter="url(#glow)" opacity="0.95"/>
+  <!-- Scan line reflection -->
+  <rect x="112" y="121" width="176" height="1" rx="0.5" fill="url(#scanLine)" opacity="0.3"/>
+
+  <!-- Scanner bottom bar with buttons -->
+  <rect x="100" y="198" width="200" height="22" rx="0" fill="#111128"/>
+  <rect x="100" y="218" width="200" height="2" rx="1" fill="#6366f1" fill-opacity="0.3"/>
+  <!-- Buttons -->
+  <circle cx="120" cy="209" r="5" fill="#6366f1" fill-opacity="0.6"/>
+  <circle cx="136" cy="209" r="5" fill="#4f46e5" fill-opacity="0.4"/>
+  <rect x="260" y="204" width="30" height="10" rx="5" fill="#6366f1" fill-opacity="0.5"/>
+
+  <!-- Scanner legs -->
+  <rect x="115" y="220" width="12" height="16" rx="6" fill="#1a1a2e" stroke="#6366f1" stroke-opacity="0.3" stroke-width="1"/>
+  <rect x="273" y="220" width="12" height="16" rx="6" fill="#1a1a2e" stroke="#6366f1" stroke-opacity="0.3" stroke-width="1"/>
+
+  <!-- USB cable -->
+  <path d="M200 236 Q200 248 220 248 L260 248" stroke="#6366f1" stroke-opacity="0.4" stroke-width="2" stroke-linecap="round" fill="none"/>
+  <circle cx="262" cy="248" r="4" fill="#6366f1" fill-opacity="0.5"/>
+
+  <!-- Floating output file cards -->
+  <!-- Card 1: PDF -->
+  <rect x="270" y="60" width="58" height="72" rx="8" fill="#1e1b4b" stroke="#6366f1" stroke-opacity="0.5" stroke-width="1" filter="url(#softglow)"/>
+  <rect x="270" y="60" width="58" height="72" rx="8" fill="url(#purpleGrad)" fill-opacity="0.08"/>
+  <path d="M298 60 L328 60 L328 78 L298 78 Z" fill="#6366f1" fill-opacity="0.2" rx="0"/>
+  <text x="299" y="74" font-family="monospace" font-size="8" fill="#818cf8" font-weight="bold">PDF</text>
+  <line x1="280" y1="88" x2="318" y2="88" stroke="white" stroke-opacity="0.2" stroke-width="1" stroke-linecap="round"/>
+  <line x1="280" y1="96" x2="318" y2="96" stroke="white" stroke-opacity="0.15" stroke-width="1" stroke-linecap="round"/>
+  <line x1="280" y1="104" x2="310" y2="104" stroke="white" stroke-opacity="0.1" stroke-width="1" stroke-linecap="round"/>
+  <text x="284" y="122" font-family="sans-serif" font-size="9" fill="#6366f1" font-weight="600">PDF</text>
+
+  <!-- Arrow 1 -->
+  <path d="M258 96 L268 96" stroke="#6366f1" stroke-opacity="0.6" stroke-width="1.5" stroke-linecap="round" marker-end="url(#arr)"/>
+  <polygon points="266,93 272,96 266,99" fill="#6366f1" fill-opacity="0.6"/>
+
+  <!-- Card 2: PNG -->
+  <rect x="270" y="148" width="58" height="72" rx="8" fill="#1e1b4b" stroke="#10b981" stroke-opacity="0.5" stroke-width="1"/>
+  <rect x="270" y="148" width="58" height="72" rx="8" fill="url(#greenGrad)" fill-opacity="0.06"/>
+  <path d="M298 148 L328 148 L328 166 L298 166 Z" fill="#10b981" fill-opacity="0.2"/>
+  <text x="299" y="162" font-family="monospace" font-size="8" fill="#34d399" font-weight="bold">IMG</text>
+  <!-- Mini image preview -->
+  <rect x="280" y="172" width="38" height="28" rx="3" fill="#10b981" fill-opacity="0.1" stroke="#10b981" stroke-opacity="0.2" stroke-width="1"/>
+  <circle cx="290" cy="180" r="4" fill="#10b981" fill-opacity="0.3"/>
+  <path d="M280 192 L290 184 L298 190 L306 183 L318 192 Z" fill="#10b981" fill-opacity="0.2"/>
+  <text x="284" y="210" font-family="sans-serif" font-size="9" fill="#10b981" font-weight="600">PNG</text>
+
+  <!-- Arrow 2 -->
+  <polygon points="266,181 272,184 266,187" fill="#10b981" fill-opacity="0.6"/>
+
+  <!-- Conversion arrow in center -->
+  <circle cx="200" cy="258" r="18" fill="#6366f1" fill-opacity="0.15" stroke="#6366f1" stroke-opacity="0.3" stroke-width="1"/>
+  <path d="M192 258 L196 254 L196 256.5 L208 256.5 L208 254 L212 258 L208 262 L208 259.5 L196 259.5 L196 262 Z" fill="#818cf8" fill-opacity="0.8"/>
+
+  <!-- Status badge -->
+  <rect x="110" y="248" width="72" height="22" rx="11" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-opacity="0.4" stroke-width="1"/>
+  <circle cx="124" cy="259" r="4" fill="#10b981" fill-opacity="0.8"/>
+  <text x="132" y="263" font-family="sans-serif" font-size="9" fill="#34d399" font-weight="600">Converted!</text>
+
+  <!-- Top sparkles -->
+  <circle cx="88" cy="42" r="2.5" fill="#818cf8" fill-opacity="0.6"/>
+  <circle cx="96" cy="34" r="1.5" fill="#c084fc" fill-opacity="0.5"/>
+  <circle cx="80" cy="32" r="1" fill="#818cf8" fill-opacity="0.4"/>
+  <circle cx="340" cy="230" r="2" fill="#10b981" fill-opacity="0.5"/>
+  <circle cx="348" cy="222" r="1.2" fill="#34d399" fill-opacity="0.4"/>
+
+  <!-- Corner dots decoration -->
+  <circle cx="72" cy="32" r="1.5" fill="#6366f1" fill-opacity="0.4"/>
+  <circle cx="328" cy="288" r="1.5" fill="#a855f7" fill-opacity="0.4"/>
+</svg>
