@@ -99,6 +99,39 @@ function svgToRaster(file: File, mimeType: string, ext: string): Promise<void> {
   });
 }
 
+// ─── Multiple Images → PDF ───────────────────────────────────────────────────
+
+export async function multiImageToPdf(files: File[]): Promise<void> {
+  const { jsPDF } = await import("jspdf");
+  let pdf: InstanceType<typeof jsPDF> | null = null;
+
+  for (const file of files) {
+    await new Promise<void>((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const w = img.naturalWidth, h = img.naturalHeight;
+        const mmW = (w * 25.4) / 96, mmH = (h * 25.4) / 96;
+        if (!pdf) {
+          pdf = new jsPDF({ orientation: mmW > mmH ? "landscape" : "portrait", unit: "mm", format: [mmW, mmH] });
+        } else {
+          pdf.addPage([mmW, mmH], mmW > mmH ? "landscape" : "portrait");
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0);
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.92), "JPEG", 0, 0, mmW, mmH);
+        URL.revokeObjectURL(url);
+        resolve();
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(`Could not load ${file.name}`)); };
+      img.src = url;
+    });
+  }
+
+  if (pdf) (pdf as InstanceType<typeof jsPDF>).save("images.pdf");
+}
+
 // ─── Image → PDF ─────────────────────────────────────────────────────────────
 
 async function imageToPdf(file: File): Promise<void> {

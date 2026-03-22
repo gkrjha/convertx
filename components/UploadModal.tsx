@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState, useCallback } from "react";
-import { X, Upload, ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
+import { X, Upload, ArrowRight, CheckCircle, AlertCircle, Trash2 } from "lucide-react";
 import type { Converter } from "@/lib/converters";
-import { convertFile } from "@/lib/convert";
+import { convertFile, multiImageToPdf } from "@/lib/convert";
 
 // Map converter.from → file input accept string
 const acceptMap: Record<string, string> = {
@@ -52,20 +52,28 @@ type Step = "upload" | "converting" | "done" | "error";
 export default function UploadModal({ converter, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [multiFiles, setMultiFiles] = useState<File[]>([]);
   const [step, setStep] = useState<Step>("upload");
   const [progress, setProgress] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const isMulti = converter.from === "Image" && converter.to === "PDF";
+
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    const f = e.dataTransfer.files[0];
-    if (f) setFile(f);
-  }, []);
+    if (isMulti) {
+      const dropped = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith("image/"));
+      if (dropped.length) setMultiFiles(prev => [...prev, ...dropped]);
+    } else {
+      const f = e.dataTransfer.files[0];
+      if (f) setFile(f);
+    }
+  }, [isMulti]);
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (isMulti ? multiFiles.length === 0 : !file) return;
     setStep("converting");
     setProgress(10);
 
@@ -74,7 +82,11 @@ export default function UploadModal({ converter, onClose }: Props) {
     }, 120);
 
     try {
-      await convertFile(file, converter.from, converter.to);
+      if (isMulti) {
+        await multiImageToPdf(multiFiles);
+      } else {
+        await convertFile(file!, converter.from, converter.to);
+      }
       clearInterval(timer);
       setProgress(100);
       setStep("done");
@@ -87,6 +99,7 @@ export default function UploadModal({ converter, onClose }: Props) {
 
   const reset = () => {
     setFile(null);
+    setMultiFiles([]);
     setStep("upload");
     setProgress(0);
     setErrorMsg("");
@@ -135,7 +148,7 @@ export default function UploadModal({ converter, onClose }: Props) {
               className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer ${
                 dragging
                   ? "border-indigo-400 bg-indigo-500/10"
-                  : file
+                  : (isMulti ? multiFiles.length > 0 : file)
                   ? "border-emerald-500/50 bg-emerald-500/5"
                   : "border-white/10 hover:border-indigo-500/40 hover:bg-white/[0.02]"
               }`}
@@ -145,51 +158,100 @@ export default function UploadModal({ converter, onClose }: Props) {
                 type="file"
                 className="hidden"
                 accept={acceptMap[converter.from] ?? "*/*"}
-                onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
+                multiple={isMulti}
+                onChange={(e) => {
+                  if (isMulti) {
+                    const picked = Array.from(e.target.files ?? []);
+                    if (picked.length) setMultiFiles(prev => [...prev, ...picked]);
+                  } else {
+                    if (e.target.files?.[0]) setFile(e.target.files[0]);
+                  }
+                }}
               />
-              {file ? (
-                <>
-                  <CheckCircle size={34} className="text-emerald-400 mx-auto mb-3" />
-                  <p className="text-white font-medium text-sm truncate max-w-[260px] mx-auto">{file.name}</p>
-                  <p className="text-white/30 text-xs mt-1">
-                    {file.size > 1024 * 1024
-                      ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
-                      : `${(file.size / 1024).toFixed(1)} KB`}
-                  </p>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); reset(); }}
-                    className="mt-3 text-xs text-white/25 hover:text-white/60 underline transition-colors"
-                  >
-                    Remove file
-                  </button>
-                </>
+
+              {/* Multi-file (Image → PDF) UI */}
+              {isMulti ? (
+                multiFiles.length > 0 ? (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <p className="text-white/50 text-xs font-semibold uppercase tracking-widest mb-3">
+                      {multiFiles.length} image{multiFiles.length > 1 ? "s" : ""} selected
+                    </p>
+                    <div className="flex flex-col gap-1.5 max-h-40 overflow-y-auto mb-3">
+                      {multiFiles.map((f, i) => (
+                        <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-1.5">
+                          <span className="text-white/60 text-xs truncate max-w-[200px]">{f.name}</span>
+                          <button
+                            onClick={() => setMultiFiles(prev => prev.filter((_, idx) => idx !== i))}
+                            className="text-white/25 hover:text-red-400 transition-colors ml-2 flex-shrink-0"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => inputRef.current?.click()}
+                      className="text-xs text-indigo-400 hover:text-indigo-300 underline transition-colors"
+                    >
+                      + Add more images
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Upload size={34} className="text-white/15 mx-auto mb-3" />
+                    <p className="text-white/50 text-sm font-medium">Drop images here</p>
+                    <p className="text-white/25 text-xs mt-1">or click to select multiple</p>
+                    <p className="text-white/15 text-xs mt-4">JPG, PNG, WebP, BMP · Files never leave your device</p>
+                  </>
+                )
               ) : (
-                <>
-                  <Upload size={34} className="text-white/15 mx-auto mb-3" />
-                  <p className="text-white/50 text-sm font-medium">
-                    Drop your {converter.from} file here
-                  </p>
-                  <p className="text-white/25 text-xs mt-1">or click to browse</p>
-                  <p className="text-white/15 text-xs mt-4">
-                    Max 100MB &nbsp;·&nbsp; Files never leave your device
-                    {converter.from === "Word" && (
-                      <span className="block mt-1 text-amber-400/60">Note: .docx format only (not .doc)</span>
-                    )}
-                  </p>
-                </>
+                /* Single file UI */
+                file ? (
+                  <>
+                    <CheckCircle size={34} className="text-emerald-400 mx-auto mb-3" />
+                    <p className="text-white font-medium text-sm truncate max-w-[260px] mx-auto">{file.name}</p>
+                    <p className="text-white/30 text-xs mt-1">
+                      {file.size > 1024 * 1024
+                        ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                        : `${(file.size / 1024).toFixed(1)} KB`}
+                    </p>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); reset(); }}
+                      className="mt-3 text-xs text-white/25 hover:text-white/60 underline transition-colors"
+                    >
+                      Remove file
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Upload size={34} className="text-white/15 mx-auto mb-3" />
+                    <p className="text-white/50 text-sm font-medium">
+                      Drop your {converter.from} file here
+                    </p>
+                    <p className="text-white/25 text-xs mt-1">or click to browse</p>
+                    <p className="text-white/15 text-xs mt-4">
+                      Max 100MB &nbsp;·&nbsp; Files never leave your device
+                      {converter.from === "Word" && (
+                        <span className="block mt-1 text-amber-400/60">Note: .docx format only (not .doc)</span>
+                      )}
+                    </p>
+                  </>
+                )
               )}
             </div>
 
             <button
-              disabled={!file}
+              disabled={isMulti ? multiFiles.length === 0 : !file}
               onClick={handleConvert}
               className={`w-full mt-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 ${
-                file
+                (isMulti ? multiFiles.length > 0 : file)
                   ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90 active:scale-[0.98] shadow-lg shadow-indigo-500/20"
                   : "bg-white/5 text-white/20 cursor-not-allowed"
               }`}
             >
-              Convert to {converter.to}
+              {isMulti
+                ? `Convert ${multiFiles.length > 0 ? multiFiles.length + " Images" : "Images"} to PDF`
+                : `Convert to ${converter.to}`}
             </button>
           </>
         )}
