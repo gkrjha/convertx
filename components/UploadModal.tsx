@@ -131,7 +131,12 @@ export default function UploadModal({ converter, onClose }: Props) {
                     Drop your {converter.from} file here
                   </p>
                   <p className="text-white/25 text-xs mt-1">or click to browse</p>
-                  <p className="text-white/15 text-xs mt-4">Max 100MB &nbsp;·&nbsp; Files never leave your device</p>
+                  <p className="text-white/15 text-xs mt-4">
+                    Max 100MB &nbsp;·&nbsp; Files never leave your device
+                    {["Word", "WORD"].includes(converter.from) && (
+                      <span className="block mt-1 text-amber-400/60">Note: .docx format only (not .doc)</span>
+                    )}
+                  </p>
                 </>
               )}
             </div>

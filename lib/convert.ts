@@ -187,7 +187,9 @@ async function jsonToXml(file: File): Promise<void> {
 async function excelToCsv(file: File): Promise<void> {
   const XLSX = await import("xlsx");
   const ab = await readAsArrayBuffer(file);
-  const wb = XLSX.read(ab, { type: "array" });
+  let wb;
+  try { wb = XLSX.read(ab, { type: "array" }); }
+  catch { throw new Error("Could not read Excel file. Make sure it's a valid .xlsx or .xls file."); }
   const ws = wb.Sheets[wb.SheetNames[0]];
   const csv = XLSX.utils.sheet_to_csv(ws);
   downloadBlob(new Blob([csv], { type: "text/csv" }), `${baseName(file)}.csv`);
@@ -206,7 +208,9 @@ async function csvToExcel(file: File): Promise<void> {
 async function excelToJson(file: File): Promise<void> {
   const XLSX = await import("xlsx");
   const ab = await readAsArrayBuffer(file);
-  const wb = XLSX.read(ab, { type: "array" });
+  let wb;
+  try { wb = XLSX.read(ab, { type: "array" }); }
+  catch { throw new Error("Could not read Excel file. Make sure it's a valid .xlsx or .xls file."); }
   const ws = wb.Sheets[wb.SheetNames[0]];
   const json = XLSX.utils.sheet_to_json(ws);
   downloadBlob(new Blob([JSON.stringify(json, null, 2)], { type: "application/json" }), `${baseName(file)}.json`);
@@ -261,6 +265,9 @@ async function xmlToExcel(file: File): Promise<void> {
 // ─── Word conversions (mammoth) ───────────────────────────────────────────────
 
 async function wordToHtml(file: File): Promise<void> {
+  if (!file.name.toLowerCase().endsWith(".docx")) {
+    throw new Error("Please upload a .docx file. Old .doc format is not supported — resave your file as .docx in Microsoft Word first.");
+  }
   const mammoth = await import("mammoth");
   const ab = await readAsArrayBuffer(file);
   const result = await mammoth.convertToHtml({ arrayBuffer: ab });
@@ -269,6 +276,9 @@ async function wordToHtml(file: File): Promise<void> {
 }
 
 async function wordToText(file: File): Promise<void> {
+  if (!file.name.toLowerCase().endsWith(".docx")) {
+    throw new Error("Please upload a .docx file. Old .doc format is not supported — resave your file as .docx in Microsoft Word first.");
+  }
   const mammoth = await import("mammoth");
   const ab = await readAsArrayBuffer(file);
   const result = await mammoth.extractRawText({ arrayBuffer: ab });
@@ -663,6 +673,9 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
 
   // ── Word → PDF ──
   if (key === "WORD→PDF") {
+    if (!file.name.toLowerCase().endsWith(".docx")) {
+      throw new Error("Please upload a .docx file. Old .doc format is not supported — resave as .docx in Microsoft Word first.");
+    }
     const mammoth = await import("mammoth");
     const ab = await readAsArrayBuffer(file);
     const result = await mammoth.convertToHtml({ arrayBuffer: ab });
