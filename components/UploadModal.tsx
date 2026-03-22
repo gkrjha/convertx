@@ -4,6 +4,44 @@ import { X, Upload, ArrowRight, CheckCircle, AlertCircle } from "lucide-react";
 import type { Converter } from "@/lib/converters";
 import { convertFile } from "@/lib/convert";
 
+// Map converter.from → file input accept string
+const acceptMap: Record<string, string> = {
+  "PDF": ".pdf,application/pdf",
+  "PDF (scanned)": ".pdf,application/pdf",
+  "Word": ".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "Excel": ".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel",
+  "PPT": ".pptx,.ppt,application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "Text": ".txt,text/plain",
+  "HTML": ".html,.htm,text/html",
+  "Markdown": ".md,.markdown,text/markdown,text/plain",
+  "CSV": ".csv,text/csv,text/plain",
+  "JSON": ".json,application/json",
+  "XML": ".xml,application/xml,text/xml",
+  "JPG": ".jpg,.jpeg,image/jpeg",
+  "PNG": ".png,image/png",
+  "WebP": ".webp,image/webp",
+  "SVG": ".svg,image/svg+xml",
+  "BMP": ".bmp,image/bmp",
+  "TIFF": ".tiff,.tif,image/tiff",
+  "GIF": ".gif,image/gif",
+  "Image": ".jpg,.jpeg,.png,.webp,.bmp,.tiff,.tif,.gif,image/*",
+  "Handwriting": ".jpg,.jpeg,.png,.webp,image/*",
+  "Screenshot": ".jpg,.jpeg,.png,.webp,image/*",
+  "MP4": ".mp4,video/mp4",
+  "AVI": ".avi,video/x-msvideo",
+  "MKV": ".mkv,video/x-matroska",
+  "MOV": ".mov,video/quicktime",
+  "Video": ".mp4,.avi,.mkv,.mov,.webm,.flv,video/*",
+  "MP3": ".mp3,audio/mpeg",
+  "WAV": ".wav,audio/wav",
+  "AAC": ".aac,audio/aac",
+  "FLAC": ".flac,audio/flac",
+  "Audio": ".mp3,.wav,.aac,.flac,.ogg,.m4a,audio/*",
+  "ZIP": ".zip,application/zip",
+  "RAR": ".rar,application/vnd.rar",
+  "Website": ".html,.htm,text/html",
+};
+
 interface Props {
   converter: Converter;
   onClose: () => void;
@@ -106,6 +144,7 @@ export default function UploadModal({ converter, onClose }: Props) {
                 ref={inputRef}
                 type="file"
                 className="hidden"
+                accept={acceptMap[converter.from] ?? "*/*"}
                 onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
               />
               {file ? (
@@ -133,7 +172,7 @@ export default function UploadModal({ converter, onClose }: Props) {
                   <p className="text-white/25 text-xs mt-1">or click to browse</p>
                   <p className="text-white/15 text-xs mt-4">
                     Max 100MB &nbsp;·&nbsp; Files never leave your device
-                    {["Word", "WORD"].includes(converter.from) && (
+                    {converter.from === "Word" && (
                       <span className="block mt-1 text-amber-400/60">Note: .docx format only (not .doc)</span>
                     )}
                   </p>
