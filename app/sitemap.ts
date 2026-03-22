@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { converters } from "@/lib/converters";
 
-const BASE = "https://convertx.app";
+const BASE = "https://flivert.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

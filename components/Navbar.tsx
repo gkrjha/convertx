@@ -32,9 +32,9 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20 group-hover:shadow-indigo-500/40 group-hover:scale-110 transition-all duration-300">
-            <Image src="/scanner.svg" alt="ConvertX" width={36} height={36} />
+            <Image src="/scanner.svg" alt="Flivert" width={36} height={36} />
           </div>
-          <span className="font-extrabold text-lg gradient-text tracking-tight">ConvertX</span>
+          <span className="font-extrabold text-lg gradient-text tracking-tight">Flivert</span>
         </Link>
 
         {/* Desktop nav */}

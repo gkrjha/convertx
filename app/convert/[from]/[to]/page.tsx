@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const fromUp = converter.from.toUpperCase();
   const toUp = converter.to.toUpperCase();
-  const title = `${fromUp} to ${toUp} Converter — Free Online | ConvertX`;
+  const title = `${fromUp} to ${toUp} Converter — Free Online | Flivert`;
   const description = `Convert ${fromUp} to ${toUp} online for free. No signup, no install. Fast, secure ${fromUp} to ${toUp} conversion in your browser. 100% free.`;
 
   return {
@@ -50,10 +50,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "website",
-      url: `https://convertx.app/convert/${from}/${to}`,
+      url: `https://flivert.com/convert/${from}/${to}`,
     },
     twitter: { card: "summary", title, description },
-    alternates: { canonical: `https://convertx.app/convert/${from}/${to}` },
+    alternates: { canonical: `https://flivert.com/convert/${from}/${to}` },
   };
 }
 

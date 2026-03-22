@@ -7,18 +7,17 @@ import { Analytics } from "@vercel/analytics/next";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://convertx.app"),
+  metadataBase: new URL("https://flivert.com"),
 
   title: {
-    default: "ConvertX — Free Online File Converter | PDF, Image, Video, Audio",
-    template: "%s | ConvertX Free Converter",
+    default: "Flivert — Free Online File Converter | PDF, Image, Video, Audio",
+    template: "%s | Flivert Free Converter",
   },
 
   description:
     "Convert files online for free — no signup, no install. 70+ converters: PDF to Word, JPG to PNG, MP4 to MP3, CSV to JSON, Excel to PDF and more. Fast, secure, browser-based.",
 
   keywords: [
-    // High-volume exact match
     "free online file converter",
     "pdf to word converter",
     "jpg to png converter",
@@ -29,7 +28,6 @@ export const metadata: Metadata = {
     "image converter online",
     "pdf converter online free",
     "video converter online free",
-    // Long-tail
     "convert pdf to word online free no signup",
     "convert jpg to png online free",
     "convert mp4 to mp3 online free",
@@ -42,9 +40,9 @@ export const metadata: Metadata = {
     "free document converter online",
   ],
 
-  authors: [{ name: "ConvertX", url: "https://convertx.app" }],
-  creator: "ConvertX",
-  publisher: "ConvertX",
+  authors: [{ name: "Flivert", url: "https://flivert.com" }],
+  creator: "Flivert",
+  publisher: "Flivert",
   category: "technology",
 
   icons: {
@@ -53,29 +51,29 @@ export const metadata: Metadata = {
   },
 
   openGraph: {
-    title: "ConvertX — Free Online File Converter | 70+ Tools",
+    title: "Flivert — Free Online File Converter | 70+ Tools",
     description:
       "Convert PDF, images, audio, video, data files online for free. No signup. No install. Runs in your browser. 70+ conversion tools.",
     type: "website",
-    url: "https://convertx.app",
-    siteName: "ConvertX",
+    url: "https://flivert.com",
+    siteName: "Flivert",
     locale: "en_US",
     images: [
       {
         url: "/og-image.svg",
         width: 1200,
         height: 630,
-        alt: "ConvertX — Free Online File Converter",
+        alt: "Flivert — Free Online File Converter",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "ConvertX — Free Online File Converter",
+    title: "Flivert — Free Online File Converter",
     description: "70+ free file conversion tools. No signup. No install. Just convert.",
     images: ["/og-image.svg"],
-    creator: "@convertx",
+    creator: "@flivert",
   },
 
   robots: {
@@ -93,8 +91,8 @@ export const metadata: Metadata = {
   },
 
   alternates: {
-    canonical: "https://convertx.app",
-    languages: { "en-US": "https://convertx.app" },
+    canonical: "https://flivert.com",
+    languages: { "en-US": "https://flivert.com" },
   },
 
   verification: {

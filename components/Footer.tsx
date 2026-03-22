@@ -28,9 +28,9 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2.5 mb-4">
               <div className="w-8 h-8 rounded-xl overflow-hidden shadow-lg shadow-indigo-500/20">
-                <Image src="/scanner.svg" alt="ConvertX" width={32} height={32} />
+                <Image src="/scanner.svg" alt="Flivert" width={32} height={32} />
               </div>
-              <span className="font-extrabold text-base gradient-text">ConvertX</span>
+              <span className="font-extrabold text-base gradient-text">Flivert</span>
             </div>
             <p className="text-white/30 text-xs leading-relaxed max-w-xs">
               Free online file converter. 70+ tools for documents, images, audio, video and data. No signup. No install. Runs in your browser.
@@ -72,7 +72,7 @@ export default function Footer() {
         {/* Bottom row */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-white/20 text-xs">
-            © {new Date().getFullYear()} ConvertX. All rights reserved.
+            © {new Date().getFullYear()} Flivert. All rights reserved.
           </p>
           <p className="text-white/15 text-xs">
             Made with ❤️ — Free forever

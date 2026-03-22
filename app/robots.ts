@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/api/", "/_next/"],
       },
     ],
-    sitemap: "https://convertx.app/sitemap.xml",
-    host: "https://convertx.app",
+    sitemap: "https://flivert.com/sitemap.xml",
+    host: "https://flivert.com",
   };
 }
