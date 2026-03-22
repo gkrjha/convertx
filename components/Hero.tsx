@@ -125,6 +125,21 @@ export default function Hero() {
         </div>
 
       </div>
+
+      {/* Scroll indicator */}
+      <a
+        href="#quick-tools"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 group cursor-pointer"
+        aria-label="Scroll down"
+      >
+        <span className="text-white/25 text-[10px] uppercase tracking-[0.2em] group-hover:text-white/50 transition-colors">Scroll</span>
+        <div className="w-10 h-10 rounded-full border-2 border-white/15 group-hover:border-indigo-500/60 bg-white/[0.03] group-hover:bg-indigo-500/10 flex items-center justify-center transition-all duration-300 shadow-lg group-hover:shadow-indigo-500/20">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="animate-bounce text-white/40 group-hover:text-indigo-400 transition-colors">
+            <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </a>
+
     </section>
   );
 }

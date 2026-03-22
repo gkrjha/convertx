@@ -28,7 +28,7 @@ export default function QuickTools() {
   const [active, setActive] = useState<Converter | null>(null);
 
   return (
-    <section className="py-14 px-4">
+    <section id="quick-tools" className="py-14 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -71,6 +71,22 @@ export default function QuickTools() {
       </div>
 
       {active && <UploadModal converter={active} onClose={() => setActive(null)} />}
+
+      {/* Scroll to all converters */}
+      <div className="flex justify-center mt-10">
+        <a
+          href="#converters"
+          className="flex flex-col items-center gap-2 group cursor-pointer"
+          aria-label="See all converters"
+        >
+          <span className="text-white/25 text-[10px] uppercase tracking-[0.2em] group-hover:text-white/50 transition-colors">All Converters</span>
+          <div className="w-10 h-10 rounded-full border-2 border-white/15 group-hover:border-indigo-500/60 bg-white/[0.03] group-hover:bg-indigo-500/10 flex items-center justify-center transition-all duration-300 shadow-lg group-hover:shadow-indigo-500/20">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="animate-bounce text-white/40 group-hover:text-indigo-400 transition-colors">
+              <path d="M2 4.5L7 9.5L12 4.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+        </a>
+      </div>
     </section>
   );
 }
