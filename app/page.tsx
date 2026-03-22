@@ -1,4 +1,5 @@
 import Hero from "@/components/Hero";
+import QuickTools from "@/components/QuickTools";
 import ConverterGrid from "@/components/ConverterGrid";
 import Features from "@/components/Features";
 import FAQ from "@/components/FAQ";
@@ -78,6 +79,7 @@ export default function Home() {
       <HomeJsonLd />
       <main>
         <Hero />
+        <QuickTools />
         <ConverterGrid />
         <Features />
         <FAQ />
