@@ -22,13 +22,19 @@ const perks = [
 
 // Only these conversions work natively in the browser
 const BROWSER_SUPPORTED = new Set([
+  // Images
   "JPG→PNG","PNG→JPG","JPG→WEBP","WEBP→JPG","PNG→WEBP","WEBP→PNG",
-  "BMP→JPG","TIFF→JPG","GIF→JPG",
-  "SVG→PNG","SVG→JPG",
+  "BMP→JPG","TIFF→JPG","GIF→JPG","SVG→PNG","SVG→JPG",
   "IMAGE→PDF","JPG→PDF","PNG→PDF","WEBP→PDF",
-  "CSV→JSON","JSON→CSV",
-  "XML→JSON","JSON→XML",
-  "MARKDOWN→HTML","HTML→MARKDOWN",
+  // Excel
+  "EXCEL→CSV","CSV→EXCEL","EXCEL→JSON","JSON→EXCEL","EXCEL→XML","XML→EXCEL",
+  // CSV / JSON / XML
+  "CSV→JSON","JSON→CSV","XML→JSON","JSON→XML",
+  // Word
+  "WORD→HTML","WORD→TEXT",
+  // Web / Text
+  "MARKDOWN→HTML","HTML→MARKDOWN","PDF→TEXT","TEXT→PDF","HTML→PDF",
+  // Audio
   "MP3→WAV","WAV→MP3","AAC→MP3","FLAC→MP3",
 ]);
 
