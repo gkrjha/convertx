@@ -634,11 +634,18 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
     return;
   }
 
-  // ── PDF → Word (extract text → docx-like HTML wrapped) ──
+  // ── PDF → Word ──
   if (key === "PDF→WORD") {
     const text = await pdfToTextString(file);
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><pre style="font-family:Arial;font-size:12pt;white-space:pre-wrap">${text}</pre></body></html>`;
-    downloadBlob(new Blob([html], { type: "application/msword" }), `${baseName(file)}.doc`);
+    const { Document, Packer, Paragraph, TextRun } = await import("docx");
+    const paragraphs = text.split("\n").map((line) =>
+      new Paragraph({ children: [new TextRun(line)] })
+    );
+    const doc = new Document({ sections: [{ children: paragraphs }] });
+    const blob = new Blob([await Packer.toBlob(doc)], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    downloadBlob(blob, `${baseName(file)}.docx`);
     return;
   }
 
@@ -720,15 +727,31 @@ export async function convertFile(file: File, fromFmt: string, toFmt: string): P
   // ── HTML → Word ──
   if (key === "HTML→WORD") {
     const text = await readAsText(file);
-    downloadBlob(new Blob([text], { type: "application/msword" }), `${baseName(file)}.doc`);
+    const plain = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+    const { Document, Packer, Paragraph, TextRun } = await import("docx");
+    const paragraphs = plain.split(/\n+/).map((line) =>
+      new Paragraph({ children: [new TextRun(line)] })
+    );
+    const doc = new Document({ sections: [{ children: paragraphs }] });
+    const blob = new Blob([await Packer.toBlob(doc)], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    downloadBlob(blob, `${baseName(file)}.docx`);
     return;
   }
 
   // ── Text → Word ──
   if (key === "TEXT→WORD") {
     const text = await readAsText(file);
-    const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body><pre>${text}</pre></body></html>`;
-    downloadBlob(new Blob([html], { type: "application/msword" }), `${baseName(file)}.doc`);
+    const { Document, Packer, Paragraph, TextRun } = await import("docx");
+    const paragraphs = text.split("\n").map((line) =>
+      new Paragraph({ children: [new TextRun(line)] })
+    );
+    const doc = new Document({ sections: [{ children: paragraphs }] });
+    const blob = new Blob([await Packer.toBlob(doc)], {
+      type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+    downloadBlob(blob, `${baseName(file)}.docx`);
     return;
   }
 
